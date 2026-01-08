@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -23,4 +28,22 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  color: white;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);  
+  border: none;
+  font-weight: 600;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03); 
+  backdrop-filter: blur(16px);         
+  -webkit-backdrop-filter: blur(16px); 
+  border: 1px solid rgba(255, 255, 255, 0.08); 
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); 
+  border-radius: 16px;
 }
