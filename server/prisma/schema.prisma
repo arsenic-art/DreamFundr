@@ -21,7 +21,7 @@ model User {
   verificationTokens VerificationToken[]
   fundraisers Fundraiser[]
   comments    Comment[]
-
+  donations   Donation[]
   @@index([email])
 }
 
@@ -53,7 +53,7 @@ model Fundraiser {
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   comments Comment[]
-
+  donations Donation[]
   @@index([userId])
 }
 
@@ -71,3 +71,26 @@ model Comment {
 
   @@index([fundraiserId])
 }
+
+
+model Donation {
+  id              String   @id @default(uuid())
+  amount          Int
+  razorpayOrderId String
+  razorpayPaymentId String @unique
+  razorpaySignature String
+
+  fundraiserId String
+  fundraiser   Fundraiser @relation(fields: [fundraiserId], references: [id])
+
+  userId String
+  user   User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  
+  @@index([razorpayPaymentId])
+  @@index([fundraiserId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
