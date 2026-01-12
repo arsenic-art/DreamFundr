@@ -58,11 +58,7 @@ const limiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.originalUrl === '/health',
-  // Custom key generator for better rate limiting
-  keyGenerator: (req) => {
-    return req.ip || req.connection.remoteAddress || 'unknown';
-  },
+  skip: (req) => req.originalUrl === '/health',  
 });
 app.use(limiter);
 
@@ -95,7 +91,7 @@ app.use("/api", routes);
 app.use("/health", healthRoutes);
 
 // Catch-all route for undefined endpoints
-app.use('*', (req, res) => {
+app.use('/', (req, res) => {
   res.status(404).json({ 
     message: 'Endpoint not found',
     path: req.originalUrl,
