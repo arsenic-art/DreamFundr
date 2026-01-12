@@ -1,24 +1,43 @@
 import type { Request, Response } from "express";
 import prisma from "../prisma.js";
+import { uploadImage } from "../utils/cloudinaryUpload.js";
 
-export const createFundraiser = async (req: Request, res: Response) => {
+// Extended Request type for Multer
+interface MulterRequest extends Request {
+  file?: Express.Multer.File;
+  userId?: string;
+}
+
+export const createFundraiser = async (req: MulterRequest, res: Response) => {
   try {
-    const userId = req.userId;  
+    const userId = req.userId!;
     const { title, description, goalAmount } = req.body;
 
     if (!title || !description || !goalAmount) {
       return res.status(400).json({ message: "All fields required" });
     }
 
-    if (goalAmount <= 0) {
+    if (Number(goalAmount) <= 0) {
       return res.status(400).json({ message: "Goal amount must be positive" });
+    }
+
+    let coverImageUrl = null;
+
+    // Handle Image Upload
+    if (req.file) {
+      coverImageUrl = await uploadImage(
+        req.file.buffer,
+        "fundraisers", // Cloudinary folder
+        `fundraiser_${Date.now()}`
+      );
     }
 
     const fundraiser = await prisma.fundraiser.create({
       data: {
         title,
         description,
-        goalAmount,
+        goalAmount: Number(goalAmount),
+        coverImage: coverImageUrl,
         userId,
       },
     });
@@ -30,7 +49,6 @@ export const createFundraiser = async (req: Request, res: Response) => {
   }
 };
 
-
 export const getAllFundraisers = async (_req: Request, res: Response) => {
   try {
     const fundraisers = await prisma.fundraiser.findMany({
@@ -38,7 +56,7 @@ export const getAllFundraisers = async (_req: Request, res: Response) => {
       orderBy: { createdAt: "desc" },
       include: {
         user: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, avatar: true },
         },
       },
     });
@@ -50,7 +68,6 @@ export const getAllFundraisers = async (_req: Request, res: Response) => {
   }
 };
 
-
 export const getFundraiserById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -59,12 +76,12 @@ export const getFundraiserById = async (req: Request, res: Response) => {
       where: { id },
       include: {
         user: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, avatar: true },
         },
         comments: {
           include: {
             user: {
-              select: { id: true, name: true },
+              select: { id: true, name: true, avatar: true },
             },
           },
           orderBy: { createdAt: "desc" },
@@ -83,7 +100,7 @@ export const getFundraiserById = async (req: Request, res: Response) => {
   }
 };
 
-export const closeFundraiser = async (req: Request, res: Response) => {
+export const closeFundraiser = async (req: MulterRequest, res: Response) => {
   try {
     const userId = req.userId;
     const { id } = req.params;
@@ -115,8 +132,7 @@ export const closeFundraiser = async (req: Request, res: Response) => {
   }
 };
 
-
-export const updateFundraiser = async (req: Request, res: Response) => {
+export const updateFundraiser = async (req: MulterRequest, res: Response) => {
   try {
     const userId = req.userId;
     const { id } = req.params;
@@ -134,11 +150,23 @@ export const updateFundraiser = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
+    let coverImageUrl = undefined;
+
+    // Handle Image Update if provided
+    if (req.file) {
+      coverImageUrl = await uploadImage(
+        req.file.buffer,
+        "fundraisers",
+        `fundraiser_${id}_${Date.now()}`
+      );
+    }
+
     const updated = await prisma.fundraiser.update({
       where: { id },
       data: {
-        title: title ?? fundraiser.title,
-        description: description ?? fundraiser.description,
+        title: title ?? undefined,
+        description: description ?? undefined,
+        coverImage: coverImageUrl,
       },
     });
 
@@ -149,8 +177,7 @@ export const updateFundraiser = async (req: Request, res: Response) => {
   }
 };
 
-
-export const getMyFundraisers = async (req: Request, res: Response) => {
+export const getMyFundraisers = async (req: MulterRequest, res: Response) => {
   try {
     const userId = req.userId;
 
@@ -165,5 +192,3 @@ export const getMyFundraisers = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
-

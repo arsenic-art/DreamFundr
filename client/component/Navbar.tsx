@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { X, Menu, User, LogOut } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 
 export default function Navbar() {
@@ -11,6 +12,7 @@ export default function Navbar() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const { isLoggedIn, user, logout } = useAuthStore();
+  const router = useRouter();
 
   const handleScroll = () => {
     const currentScrollY = window.scrollY;
@@ -28,6 +30,10 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+
+  const handleUserClick = () => {
+    router.push("/profile");
+  };
 
   return (
     <motion.header 
@@ -82,23 +88,28 @@ export default function Navbar() {
                 {/* Divider */}
                 <div className="w-px h-4 bg-zinc-800 mx-2" />
                 
-                {/* User Menu */}
-                <div className="flex items-center space-x-1.5">
-                  <div className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md bg-zinc-900/60 border border-zinc-800/50 hover:bg-zinc-900/80 transition-all">
-                    <div className="w-6 h-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-                      <User className="w-3.5 h-3.5 text-zinc-400" strokeWidth={2.5} />
-                    </div>
-                    <span className="text-xs text-zinc-300 font-medium max-w-[90px] truncate">{user?.name}</span>
+                {/* CLICKABLE User Avatar/Name → Goes to Profile */}
+                <div 
+                  className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md bg-zinc-900/60 border border-zinc-800/50 hover:bg-gradient-to-r hover:from-indigo-500/20 hover:to-purple-500/20 hover:border-indigo-400/40 cursor-pointer transition-all duration-300 group"
+                  onClick={handleUserClick}
+                  title="Go to Profile"
+                >
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500/30 to-purple-500/30 group-hover:scale-110 transition-all duration-300 border border-white/20 flex items-center justify-center shadow-lg">
+                    <User className="w-3.5 h-3.5 text-white drop-shadow-sm" strokeWidth={2} />
                   </div>
-                  
-                  <button 
-                    onClick={logout}
-                    className="p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60 rounded-md transition-all duration-200"
-                    title="Logout"
-                  >
-                    <LogOut className="w-3.5 h-3.5" strokeWidth={2.5} />
-                  </button>
+                  <span className="text-xs text-zinc-200 font-semibold max-w-[90px] truncate group-hover:text-white transition-colors">
+                    {user?.name}
+                  </span>
                 </div>
+                
+                {/* Logout Button */}
+                <button 
+                  onClick={logout}
+                  className="p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60 rounded-md transition-all duration-200 ml-1"
+                  title="Logout"
+                >
+                  <LogOut className="w-3.5 h-3.5" strokeWidth={2.5} />
+                </button>
               </>
             ) : (
               <Link href="/login">
@@ -160,12 +171,23 @@ export default function Navbar() {
                   </Link>
                   
                   <div className="pt-3 mt-3 border-t border-zinc-800">
-                    <div className="flex items-center space-x-2.5 px-3 py-2.5 bg-zinc-900/60 border border-zinc-800/50 rounded-md mb-2 hover:bg-zinc-900/80 transition-all">
-                      <div className="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-                        <User className="w-4 h-4 text-zinc-400" strokeWidth={2.5} />
+                    {/* CLICKABLE User Avatar/Name → Goes to Profile */}
+                    <div 
+                      className="flex items-center space-x-2.5 px-3 py-2.5 bg-zinc-900/60 border border-zinc-800/50 rounded-md mb-2 hover:bg-gradient-to-r hover:from-indigo-500/20 hover:to-purple-500/20 hover:border-indigo-400/40 cursor-pointer transition-all duration-300 group"
+                      onClick={() => {
+                        handleUserClick();
+                        setShowMobileMenu(false);
+                      }}
+                      title="Go to Profile"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500/30 to-purple-500/30 group-hover:scale-110 transition-all duration-300 border border-white/20 flex items-center justify-center shadow-lg">
+                        <User className="w-4 h-4 text-white drop-shadow-sm" strokeWidth={2} />
                       </div>
-                      <span className="text-zinc-200 font-medium text-sm max-w-[200px] truncate">{user?.name}</span>
+                      <span className="text-zinc-200 font-semibold text-sm max-w-[200px] truncate group-hover:text-white transition-colors">
+                        {user?.name}
+                      </span>
                     </div>
+                    
                     <button 
                       onClick={() => {
                         logout();

@@ -128,11 +128,9 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    const jwtToken = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET!,
-      { expiresIn: "7d" }
-    );
+    const jwtToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, {
+      expiresIn: "7d",
+    });
 
     return res.json({
       token: jwtToken,
@@ -140,6 +138,11 @@ export const login = async (req: Request, res: Response) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        avatar: user.avatar ?? null,
+        bio: user.bio ?? null,
+        location: user.location ?? null,
+        totalDonated: user.totalDonated,
+        donationCount: user.donationCount,
       },
     });
   } catch (error) {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, DollarSign, FileText, Target, AlertCircle } from "lucide-react";
+import { ImagePlus, AlertCircle, X } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import api from "@/lib/api";
 
@@ -13,6 +13,9 @@ export default function CreateFundraiserPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [goalAmount, setGoalAmount] = useState("");
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -21,6 +24,19 @@ export default function CreateFundraiserPage() {
       router.push("/login");
     }
   }, [isLoggedIn, router]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCoverImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeImage = () => {
+    setCoverImage(null);
+    setImagePreview(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,10 +55,19 @@ export default function CreateFundraiserPage() {
     setLoading(true);
 
     try {
-      await api.post("/fundraisers", {
-        title,
-        description,
-        goalAmount: Number(goalAmount),
+      // Use FormData for file upload
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("goalAmount", goalAmount);
+      if (coverImage) {
+        formData.append("coverImage", coverImage);
+      }
+
+      await api.post("/fundraisers", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
       router.push("/dashboard");
@@ -65,14 +90,7 @@ export default function CreateFundraiserPage() {
         }}
       />
 
-      {/* Ambient Glows */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-[128px]" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[128px]" />
-      </div>
-
       <div className="max-w-2xl mx-auto relative z-10">
-        {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight text-white">
             Create Your Campaign
@@ -80,8 +98,7 @@ export default function CreateFundraiserPage() {
           <p className="text-zinc-400 text-lg">Share your story and start raising funds</p>
         </div>
 
-        {/* Form Card */}
-        <div className="bg-zinc-900/50 border border-zinc-800/50 p-8 rounded-xl">
+        <div className="bg-zinc-900/50 border border-zinc-800/50 p-8 rounded-xl backdrop-blur-sm">
           {error && (
             <div className="mb-6 p-4 bg-red-500/5 border border-red-500/20 rounded-lg flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
@@ -90,11 +107,40 @@ export default function CreateFundraiserPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Cover Image Upload */}
+            <div className="space-y-2">
+                <label className="block text-sm font-medium text-zinc-300">Cover Image</label>
+                {!imagePreview ? (
+                    <div className="relative border-2 border-dashed border-zinc-800 rounded-lg p-8 hover:bg-zinc-900/50 transition-colors">
+                        <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <div className="flex flex-col items-center justify-center text-zinc-500">
+                            <ImagePlus className="w-10 h-10 mb-2" />
+                            <p className="text-sm">Click to upload cover image</p>
+                            <p className="text-xs text-zinc-600 mt-1">Supports JPG, PNG (Max 5MB)</p>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="relative rounded-lg overflow-hidden border border-zinc-800 h-64 bg-zinc-900">
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                        <button
+                            type="button"
+                            onClick={removeImage}
+                            className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-black/80 transition-colors"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                )}
+            </div>
+
             {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Campaign Title
-              </label>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">Campaign Title</label>
               <input
                 type="text"
                 className="w-full bg-black/30 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all"
@@ -103,29 +149,23 @@ export default function CreateFundraiserPage() {
                 placeholder="Help me fund my dream project"
                 maxLength={100}
               />
-              <p className="text-xs text-zinc-500 mt-1.5">{title.length}/100 characters</p>
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Description
-              </label>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">Description</label>
               <textarea
                 className="w-full bg-black/30 border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all resize-none"
                 rows={8}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Tell your story... Why do you need funds? What will you achieve with them?"
+                placeholder="Tell your story... Why do you need funds?"
               />
-              <p className="text-xs text-zinc-500 mt-1.5">Be clear and compelling about your goals</p>
             </div>
 
             {/* Goal Amount */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Goal Amount (₹)
-              </label>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">Goal Amount (₹)</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-medium">₹</span>
                 <input
@@ -137,32 +177,16 @@ export default function CreateFundraiserPage() {
                   min="1"
                 />
               </div>
-              <p className="text-xs text-zinc-500 mt-1.5">Enter the total amount you need to raise</p>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-zinc-50 text-black py-3.5 rounded-lg font-semibold hover:bg-white hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-200 mt-8"
+              className="w-full bg-zinc-50 text-black py-3.5 rounded-lg font-semibold hover:bg-white hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-8"
             >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                  Creating Campaign...
-                </span>
-              ) : (
-                "Create Campaign"
-              )}
+              {loading ? "Creating Campaign..." : "Create Campaign"}
             </button>
           </form>
-
-          {/* Info Footer */}
-          <div className="mt-6 pt-6 border-t border-zinc-800/50">
-            <p className="text-xs text-zinc-500 text-center">
-              By creating a campaign, you agree to our terms of service and transparency guidelines
-            </p>
-          </div>
         </div>
       </div>
     </div>

@@ -5,3 +5,10 @@ declare module "express-serve-static-core" {
     userId?: string;
   }
 }
+
+declare namespace Express {
+  interface Request {
+    userId?: string;
+    file?: Express.Multer.File;
+  }
+}

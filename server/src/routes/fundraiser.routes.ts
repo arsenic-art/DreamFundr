@@ -1,22 +1,23 @@
 import { Router } from "express";
+import { protect } from "../middlewares/auth.middleware.js";
+import { upload } from "../middlewares/upload.middleware.js";   
 import {
   createFundraiser,
   getAllFundraisers,
   getFundraiserById,
   updateFundraiser,
   closeFundraiser,
-  getMyFundraisers,
+  getMyFundraisers
 } from "../controllers/fundraiser.controller.js";
-import { protect } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.post("/", protect, createFundraiser);
 router.get("/", getAllFundraisers);
-router.get("/me", protect, getMyFundraisers);
 router.get("/:id", getFundraiserById);
 
-router.patch("/:id", protect, updateFundraiser);
+router.post("/", protect, upload.single("coverImage"), createFundraiser);
+router.put("/:id", protect, upload.single("coverImage"), updateFundraiser);
 router.patch("/:id/close", protect, closeFundraiser);
+router.get("/me", protect, getMyFundraisers);
 
 export default router;

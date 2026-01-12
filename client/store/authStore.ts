@@ -4,8 +4,13 @@ import api from '@/lib/api';
 
 interface User {
   id: string;
-  email: string;
   name: string;
+  email: string;
+  avatar?: string;
+  bio?: string;
+  location?: string;
+  totalDonated: number;
+  donationCount: number;
 }
 
 interface AuthState {
@@ -15,11 +20,12 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   setUser: (user: User, token: string) => void;
+  updateUser: (user: User, token?: string) => void; // ✅ Added
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       token: null,
       isLoggedIn: false,
@@ -32,7 +38,6 @@ export const useAuthStore = create<AuthState>()(
           });
 
           const { user, token } = response.data;
-          
           set({ user, token, isLoggedIn: true });
           localStorage.setItem('token', token);
         } catch (error) {
@@ -43,13 +48,18 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         set({ user: null, token: null, isLoggedIn: false });
-        
         localStorage.removeItem('token');
       },
 
       setUser: (user, token) => {
         set({ user, token, isLoggedIn: true });
-        localStorage.setItem('token', token);
+        if (token) localStorage.setItem('token', token);
+      },
+
+      // ✅ FIXED: Proper update method
+      updateUser: (user, token = get().token) => {
+        set({ user, token, isLoggedIn: true });
+        if (token) localStorage.setItem('token', token);
       },
     }),
     {

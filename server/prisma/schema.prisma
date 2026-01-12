@@ -8,22 +8,29 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  password      String
+  avatar        String?  
+  bio           String?  
+  location      String?  
+  totalDonated  Int      @default(0)  
+  donationCount Int      @default(0)  
 
-  isVerified Boolean @default(false)
+  isVerified    Boolean  @default(false)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   verificationTokens VerificationToken[]
-  fundraisers Fundraiser[]
-  comments    Comment[]
-  donations   Donation[]
+  fundraisers        Fundraiser[]
+  comments           Comment[]
+  donations          Donation[]
+
   @@index([email])
 }
+
 
 model VerificationToken {
   id        String   @id @default(uuid())
@@ -40,7 +47,7 @@ model Fundraiser {
   id          String   @id @default(uuid())
   title       String
   description String
-
+  coverImage  String?
   goalAmount   Int
   raisedAmount Int      @default(0)
 

@@ -1,32 +1,30 @@
+// middleware/auth.middleware.ts
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-interface TokenPayload {
-  userId: string;
-  iat: number;
-  exp: number;
-}
-
-export const protect = (req: Request, res: Response, next: NextFunction) => {
+export const protect = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const authHeader = req.headers.authorization;
+    let token: string | undefined;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "Unauthorized" });
+    if (req.headers.authorization?.startsWith("Bearer")) {
+      token = req.headers.authorization.split(" ")[1];
     }
 
-    const token: any = authHeader.split(" ")[1];
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-
-    if (typeof decoded !== "object" || !("userId" in decoded)) {
-      return res.status(401).json({ message: "Invalid token payload" });
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "No token, authorization denied" });
     }
 
-    req.userId = (decoded as TokenPayload).userId;
-
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+    req.userId = decoded.userId;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalid or expired token" });
+    console.error("Auth middleware error:", error);
+    res.status(401).json({ message: "Token is not valid" });
   }
 };
