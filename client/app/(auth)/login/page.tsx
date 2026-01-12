@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Mail, Lock, LogIn, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
+import { getErrorMessage } from '@/lib/errorHandler';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function LoginPage() {
       await login(email, password);
       router.push("/fundraisers");
     } catch (err: any) {
-      setError(err?.message || "Invalid credentials");
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

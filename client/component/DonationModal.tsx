@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Heart } from "lucide-react";
 import api from "@/lib/api";
+import { getErrorMessage } from "@/lib/errorHandler";
 
 interface DonationModalProps {
   fundraiserId: string;
@@ -115,7 +116,7 @@ export default function DonationModal({
         setLoading(false);
       });
     } catch (err: any) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setError(getErrorMessage(err));
       setLoading(false);
     }
   };

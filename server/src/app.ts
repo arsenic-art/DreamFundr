@@ -6,6 +6,8 @@ import routes from "./routes/index.js";
 import { handleWebhook } from "./controllers/payment.controller.js";
 import { requestLogger, errorLogger } from "./middlewares/logger.middleware.js";
 import rateLimit from "express-rate-limit";
+import { createErrorResponse } from "./utils/errorHandler.js";
+import { ErrorCodes } from "./types/error.types.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -64,10 +66,12 @@ app.use(
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === "production" ? 500 : 1000,
-  message: {
-    message: "Too many requests, please try again later.",
-    retryAfter: Math.ceil((15 * 60 * 1000) / 1000),
-  },
+  message: createErrorResponse(
+    ErrorCodes.SYSTEM_RATE_LIMITED,
+    "Rate limit exceeded",
+    undefined,
+    { retryAfter: Math.ceil((15 * 60 * 1000) / 1000) }
+  ),
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => req.originalUrl === "/health",
@@ -109,11 +113,13 @@ app.use("/health", healthRoutes);
 
 // Catch-all route for undefined endpoints
 app.use("/", (req, res) => {
-  res.status(404).json({
-    message: "Endpoint not found",
-    path: req.originalUrl,
-    method: req.method,
-  });
+  const errorResponse = createErrorResponse(
+    ErrorCodes.SYSTEM_RESOURCE_NOT_FOUND,
+    `Endpoint not found: ${req.method} ${req.originalUrl}`,
+    undefined,
+    { path: req.originalUrl, method: req.method }
+  );
+  res.status(404).json(errorResponse);
 });
 
 app.use(errorLogger);
@@ -127,11 +133,16 @@ app.use(
     next: express.NextFunction
   ) => {
     console.error("Unhandled error:", err);
-    const isDevelopment = process.env.NODE_ENV === "development";
-    res.status(err.status || 500).json({
-      message: isDevelopment ? err.message : "Internal server error",
-      ...(isDevelopment && { stack: err.stack }),
-    });
+
+    // Use standardized error response
+    const errorResponse = createErrorResponse(
+      ErrorCodes.SYSTEM_INTERNAL_ERROR,
+      err.message || "Internal server error",
+      undefined,
+      process.env.NODE_ENV === "development" ? { stack: err.stack } : undefined
+    );
+
+    res.status(err.status || 500).json(errorResponse);
   }
 );
 

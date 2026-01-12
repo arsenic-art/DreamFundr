@@ -16,7 +16,6 @@ const api = axios.create({
   withCredentials: true, 
 });
 
-// Request interceptor
 api.interceptors.request.use(
   (config) => {
     const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
@@ -24,8 +23,6 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
-    // Add request ID for debugging
     config.headers['X-Request-ID'] = Math.random().toString(36).substring(7);
 
     return config;
@@ -40,53 +37,44 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
-    // Handle rate limiting with exponential backoff
+    
     if (error.response?.status === 429 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
       const retryAfter = error.response.headers['retry-after'] || 2;
-      const delay = Math.min(retryAfter * 1000, 10000); // Max 10 seconds
-      
+      const delay = Math.min(retryAfter * 1000, 10000);
       console.warn(`Rate limited. Retrying after ${delay}ms...`);
-      
       await new Promise(resolve => setTimeout(resolve, delay));
       return api.request(originalRequest);
     }
 
-    // Handle network errors
+    if (error.response) {
+      const serverMessage = error.response.data?.message || 
+                           error.response.data?.error || 
+                           error.response.data ||
+                           `Server error (${error.response.status})`;
+      
+      const serverError = new Error(serverMessage) as any;
+      serverError.response = error.response;  
+      serverError.status = error.response.status;
+      
+      if (error.response.status === 401) {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('token');
+          if (window.location.pathname !== '/login') {
+            console.warn('Authentication expired, redirecting to login...');
+            window.location.href = '/login';
+          }
+        }
+      }
+      
+      return Promise.reject(serverError);
+    }
     if (error.code === 'ECONNABORTED') {
-      console.error("Request timeout");
       error.message = "Request timed out. Please check your connection.";
     } else if (error.code === 'ERR_NETWORK') {
-      console.error("Network error");
       error.message = "Network error. Please check your internet connection.";
     }
 
-    // Handle authentication errors
-    if (error.response?.status === 401) {
-      // Clear invalid token
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        // Optionally redirect to login
-        if (window.location.pathname !== '/login') {
-          console.warn('Authentication expired, redirecting to login...');
-          window.location.href = '/login';
-        }
-      }
-    }
-
-    // Log errors in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('API Error:', {
-        url: error.config?.url,
-        method: error.config?.method,
-        status: error.response?.status,
-        message: error.message,
-        data: error.response?.data
-      });
-    }
-    
     return Promise.reject(error);
   }
 );

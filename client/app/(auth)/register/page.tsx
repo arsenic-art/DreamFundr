@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Mail, Lock, User, UserPlus, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import api from "@/lib/api";
+import { getErrorMessage } from "@/lib/errorHandler";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function RegisterPage() {
 
       router.push("/verify-pending");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

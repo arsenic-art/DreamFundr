@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ImagePlus, AlertCircle, X } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import api from "@/lib/api";
+import { getErrorMessage } from "@/lib/errorHandler";
 
 export default function CreateFundraiserPage() {
   const router = useRouter();
@@ -71,7 +72,7 @@ export default function CreateFundraiserPage() {
 
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create fundraiser");
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

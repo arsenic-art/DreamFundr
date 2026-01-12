@@ -136,10 +136,6 @@ export default function DreamFundrLanding() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    fetch(`${backApi}/health`).catch((e) => console.log("Health check silent fail", e));
-  }, []);
-
   const dream = MOCK_DREAMS[currentDreamIndex];
 
   return (

@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import api from '@/lib/api';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import api from "@/lib/api";
 
 interface User {
   id: string;
@@ -20,7 +20,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   setUser: (user: User, token: string) => void;
-  updateUser: (user: User, token?: string) => void; 
+  updateUser: (user: User, token?: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -32,38 +32,38 @@ export const useAuthStore = create<AuthState>()(
 
       login: async (email, password) => {
         try {
-          const response = await api.post('/auth/login', {
+          const response = await api.post("/auth/login", {
             email,
             password,
           });
 
           const { user, token } = response.data;
           set({ user, token, isLoggedIn: true });
-          localStorage.setItem('token', token);
-        } catch (error) {
-          console.error('Login failed:', error);
+          localStorage.setItem("token", token);
+        } catch (error: any) {
+          console.error("Login failed:", error.message);
           throw error;
         }
       },
 
       logout: () => {
         set({ user: null, token: null, isLoggedIn: false });
-        localStorage.removeItem('token');
+        localStorage.removeItem("token");
       },
 
       setUser: (user, token) => {
         set({ user, token, isLoggedIn: true });
-        if (token) localStorage.setItem('token', token);
+        if (token) localStorage.setItem("token", token);
       },
 
       updateUser: (user, token?: string) => {
         const currentToken = token || get().token;
         set({ user, token: currentToken, isLoggedIn: true });
-        if (currentToken) localStorage.setItem('token', currentToken);
+        if (currentToken) localStorage.setItem("token", currentToken);
       },
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
     }
   )
 );
