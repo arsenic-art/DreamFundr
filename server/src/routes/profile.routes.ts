@@ -8,8 +8,7 @@ const router = Router();
 router.get("/", protect, getProfile);           
 router.get("/:userId", getProfile);             
 
-// Profile updates
-router.put("/", protect, updateProfile);        // PUT /api/profile → Update current user
-router.put("/avatar", protect, upload.single("avatar"), updateAvatar); // PUT /api/profile/avatar
+router.put("/", protect, updateProfile);      
+router.put("/avatar", protect, upload.single("avatar"), updateAvatar); 
 
 export default router;

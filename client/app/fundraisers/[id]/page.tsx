@@ -26,7 +26,7 @@ interface Fundraiser {
   raisedAmount: number;
   createdAt: string;
   isActive: boolean;
-  coverImage?: string;  // ✅ ADDED: Cover image field
+  coverImage?: string; 
   user: { id: string; name: string; avatar?: string };
   comments: Comment[];
 }
@@ -138,7 +138,7 @@ export default function FundraiserDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content - Left Side (2/3) */}
           <div className="lg:col-span-2 space-y-8">
-            {/* ✅ COVER IMAGE SECTION - NEW */}
+            {/* COVER IMAGE SECTION */}
             {fundraiser.coverImage && (
               <div className="relative overflow-hidden rounded-2xl bg-zinc-900/50 border border-zinc-800/50 shadow-2xl group">
                 <div 
@@ -177,11 +177,15 @@ export default function FundraiserDetailPage() {
                 )}
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center overflow-hidden">
-                    <img 
-                      src={fundraiser.user.avatar || "/api/placeholder/40/40"} 
-                      alt={fundraiser.user.name}
-                      className="w-full h-full object-cover"
-                    />
+                    {fundraiser.user.avatar ? (
+                      <img 
+                        src={fundraiser.user.avatar} 
+                        alt={fundraiser.user.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-5 h-5 text-zinc-400" strokeWidth={2} />
+                    )}
                   </div>
                   <div>
                     <p className="text-zinc-200 font-medium text-sm">{fundraiser.user.name}</p>
@@ -298,11 +302,15 @@ export default function FundraiserDetailPage() {
                     <div key={c.id} className="bg-black/20 p-5 rounded-lg border border-zinc-800/50">
                       <div className="flex items-start space-x-3">
                         <div className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                          <img 
-                            src={c.user.avatar || "/api/placeholder/36/36"} 
-                            alt={c.user.name}
-                            className="w-full h-full object-cover"
-                          />
+                          {c.user.avatar ? (
+                            <img 
+                              src={c.user.avatar} 
+                              alt={c.user.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <User className="w-4 h-4 text-zinc-400" strokeWidth={2} />
+                          )}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-2">

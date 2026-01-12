@@ -38,7 +38,6 @@ export default function ProfilePage() {
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
-  // ✅ FIXED: Correct endpoint GET /profile (current user)
   const fetchProfile = useCallback(async () => {
     try {
       setLoading(true);
@@ -62,7 +61,6 @@ export default function ProfilePage() {
     fetchProfile();
   }, [fetchProfile]);
 
-  // ✅ FIXED: Dedicated avatar upload endpoint
   const uploadAvatar = async (file: File) => {
     if (!file) return;
 
@@ -81,7 +79,7 @@ export default function ProfilePage() {
       setProfile(prev => prev ? { ...prev, avatar: newAvatar } : null);
       
       if (user) {
-        updateUser({ ...user, avatar: newAvatar } as any, user.token || '');
+        updateUser({ ...user, avatar: newAvatar } as any);
       }
       
       return newAvatar;
@@ -93,7 +91,6 @@ export default function ProfilePage() {
     }
   };
 
-  // ✅ FIXED: Profile update (no avatar)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -102,7 +99,7 @@ export default function ProfilePage() {
       const res = await api.put("/profile", formData);
       
       setProfile(res.data.user);
-      updateUser(res.data.user, user?.token || '');
+      updateUser(res.data.user);
       setEditing(false);
     } catch (err) {
       console.error("Profile update failed:", err);
@@ -179,7 +176,7 @@ export default function ProfilePage() {
               <div className="w-36 h-36 rounded-full p-1 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-white/5 shadow-2xl">
                 <div className="w-full h-full rounded-full overflow-hidden bg-zinc-900 relative">
                   <img
-                    src={profile.avatar || "/api/placeholder/150/150"}
+                    src={profile.avatar || `https://ui-avatars.io/api/?name=${encodeURIComponent(profile.name)}&background=6366f1&color=ffffff&size=150`}
                     alt={profile.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />

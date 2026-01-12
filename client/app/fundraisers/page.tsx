@@ -12,9 +12,11 @@ interface Fundraiser {
   goalAmount: number;
   raisedAmount: number;
   createdAt: string;
+  coverImage?: string;
   user: {
     id: string;
     name: string;
+    avatar?: string;
   };
 }
 
@@ -24,21 +26,36 @@ export default function FundraisersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
 
   useEffect(() => {
-    const fetchFundraisers = async () => {
-      try {
-        const res = await api.get("/fundraisers");
-        setFundraisers(res.data);
-      } catch (err: any) {
-        setError("Failed to load fundraisers");
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!hasAttemptedFetch) {
+      fetchFundraisers();
+    }
+  }, [hasAttemptedFetch]);
 
-    fetchFundraisers();
-  }, []);
+  const fetchFundraisers = async () => {
+    if (hasAttemptedFetch) return; 
+    
+    try {
+      setHasAttemptedFetch(true);
+      setLoading(true);
+      setError("");
+      
+      const res = await api.get("/fundraisers");
+      setFundraisers(res.data);
+    } catch (err: any) {
+      console.error("Fundraisers fetch error:", err);
+      
+      if (err.response?.status === 429) {
+        setError("Too many requests. Please wait a moment and refresh the page.");
+      } else {
+        setError("Failed to load fundraisers. Please try refreshing the page.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredFundraisers = fundraisers.filter((f) =>
     f.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -64,7 +81,25 @@ export default function FundraisersPage() {
       <div className="min-h-screen flex items-center justify-center px-6 bg-[#030303]">
         <div className="bg-zinc-900/50 border border-red-500/20 p-8 rounded-xl text-center max-w-md">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" strokeWidth={1.5} />
-          <p className="text-red-400 text-sm">{error}</p>
+          <p className="text-red-400 text-sm mb-6">{error}</p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => {
+                setError("");
+                setHasAttemptedFetch(false);
+                setLoading(true);
+              }}
+              className="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors text-sm font-medium"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => router.push("/")}
+              className="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg transition-colors text-sm font-medium"
+            >
+              Go Home
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -133,6 +168,18 @@ export default function FundraisersPage() {
                   {/* Hover effect overlay */}
                   <div className="absolute inset-0 bg-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                   
+                  {/* Cover Image */}
+                  {f.coverImage && (
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={f.coverImage} 
+                        alt={f.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    </div>
+                  )}
+                  
                   <div className="p-6 relative">
                     {/* Title */}
                     <h2 className="text-xl font-semibold mb-3 text-white group-hover:text-zinc-100 transition-colors line-clamp-2">
@@ -172,8 +219,16 @@ export default function FundraisersPage() {
 
                     {/* Creator */}
                     <div className="flex items-center space-x-2 pt-4 border-t border-zinc-800/50">
-                      <div className="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-                        <User className="w-3.5 h-3.5 text-zinc-400" strokeWidth={2} />
+                      <div className="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center overflow-hidden">
+                        {f.user.avatar ? (
+                          <img 
+                            src={f.user.avatar} 
+                            alt={f.user.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-3.5 h-3.5 text-zinc-400" strokeWidth={2} />
+                        )}
                       </div>
                       <span className="text-sm text-zinc-500">
                         by <span className="text-zinc-300 font-medium">{f.user.name}</span>

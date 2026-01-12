@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import prisma from "../prisma.js";
 import { uploadImage } from "../utils/cloudinaryUpload.js";
 
-// Extended Request type for Multer
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
   userId?: string;
@@ -23,11 +22,10 @@ export const createFundraiser = async (req: MulterRequest, res: Response) => {
 
     let coverImageUrl = null;
 
-    // Handle Image Upload
     if (req.file) {
       coverImageUrl = await uploadImage(
         req.file.buffer,
-        "fundraisers", // Cloudinary folder
+        "fundraisers",
         `fundraiser_${Date.now()}`
       );
     }
@@ -72,6 +70,10 @@ export const getFundraiserById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
+    if (!id) {
+      return res.status(400).json({ message: "Fundraiser ID required" });
+    }
+
     const fundraiser = await prisma.fundraiser.findUnique({
       where: { id },
       include: {
@@ -104,6 +106,14 @@ export const closeFundraiser = async (req: MulterRequest, res: Response) => {
   try {
     const userId = req.userId;
     const { id } = req.params;
+
+    if (!userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    if (!id) {
+      return res.status(400).json({ message: "Fundraiser ID required" });
+    }
 
     const fundraiser = await prisma.fundraiser.findUnique({
       where: { id },
@@ -138,6 +148,14 @@ export const updateFundraiser = async (req: MulterRequest, res: Response) => {
     const { id } = req.params;
     const { title, description } = req.body;
 
+    if (!userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    if (!id) {
+      return res.status(400).json({ message: "Fundraiser ID required" });
+    }
+
     const fundraiser = await prisma.fundraiser.findUnique({
       where: { id },
     });
@@ -150,9 +168,8 @@ export const updateFundraiser = async (req: MulterRequest, res: Response) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    let coverImageUrl = undefined;
+    let coverImageUrl: string | undefined = undefined;
 
-    // Handle Image Update if provided
     if (req.file) {
       coverImageUrl = await uploadImage(
         req.file.buffer,
@@ -161,13 +178,14 @@ export const updateFundraiser = async (req: MulterRequest, res: Response) => {
       );
     }
 
+    const updateData: any = {};
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (coverImageUrl !== undefined) updateData.coverImage = coverImageUrl;
+
     const updated = await prisma.fundraiser.update({
       where: { id },
-      data: {
-        title: title ?? undefined,
-        description: description ?? undefined,
-        coverImage: coverImageUrl,
-      },
+      data: updateData,
     });
 
     return res.json(updated);
@@ -180,6 +198,10 @@ export const updateFundraiser = async (req: MulterRequest, res: Response) => {
 export const getMyFundraisers = async (req: MulterRequest, res: Response) => {
   try {
     const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
 
     const fundraisers = await prisma.fundraiser.findMany({
       where: { userId },

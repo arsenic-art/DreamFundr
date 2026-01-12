@@ -8,6 +8,7 @@ interface TopDonor {
   user: {
     id: string;
     name: string;
+    avatar?: string;
   };
   totalAmount: number;
   donationCount: number;
@@ -62,7 +63,6 @@ export default function TopDonors({ fundraiserId }: TopDonorsProps) {
   return (
     <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-6">
       <h3 className="text-lg font-semibold text-white flex items-center space-x-2 mb-4">
-        <Trophy className="w-5 h-5 text-yellow-400" />
         <span>Top Donors</span>
       </h3>
 
@@ -72,12 +72,27 @@ export default function TopDonors({ fundraiserId }: TopDonorsProps) {
             key={donor.user.id}
             className="flex items-center space-x-3 bg-black/20 border border-zinc-800/50 p-3 rounded-lg"
           >
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border ${getMedalColor(
-                index
-              )}`}
-            >
-              <span className="font-bold text-sm">#{index + 1}</span>
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              {/* Medal/Rank */}
+              {/* <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center border ${getMedalColor(
+                  index
+                )}`}
+              >
+                <span className="font-bold text-xs">#{index + 1}</span>
+              </div> */}
+              {/* Avatar */}
+              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center overflow-hidden">
+                {donor.user.avatar ? (
+                  <img 
+                    src={donor.user.avatar} 
+                    alt={donor.user.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-4 h-4 text-zinc-400" strokeWidth={2} />
+                )}
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-white text-sm truncate">

@@ -9,13 +9,11 @@ interface UpdateProfileInput {
   avatar?: string;
 }
 
-// Update user profile
 export const updateProfile = async (req: Request<{}, {}, UpdateProfileInput>, res: Response) => {
   try {
     const userId = (req as any).userId!;
     const { name, bio, location, avatar } = req.body;
 
-    // Validate inputs
     if (name && (name.length < 2 || name.length > 50)) {
       return res.status(400).json({ message: "Name must be 2-50 characters" });
     }
@@ -24,15 +22,18 @@ export const updateProfile = async (req: Request<{}, {}, UpdateProfileInput>, re
       return res.status(400).json({ message: "Bio must be under 200 characters" });
     }
 
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+
+    if (name !== undefined) updateData.name = name;
+    if (bio !== undefined) updateData.bio = bio;
+    if (location !== undefined) updateData.location = location;
+    if (avatar !== undefined) updateData.avatar = avatar;
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: {
-        name: name || undefined,
-        bio,
-        location,
-        avatar,
-        updatedAt: new Date(),
-      },
+      data: updateData,
     });
 
     res.json({
@@ -63,7 +64,7 @@ export const updateAvatar = async (req: any, res: any) => {
     const imageUrl = await uploadImage(
       req.file.buffer,
       "avatars",
-      req.userId // public_id = userId
+      req.userId 
     );
 
     const user = await prisma.user.update({
@@ -81,16 +82,13 @@ export const updateAvatar = async (req: any, res: any) => {
   }
 };
 
-// Get user profile (current user or public profile)
 export const getProfile = async (req: Request, res: Response) => {
   try {
     let userId: string;
     
-    // Current user profile (GET /api/profile)
     if (req.path === '/profile' || !req.params.userId) {
       userId = (req as any).userId!;
     } 
-    // Public profile (GET /api/profile/:userId)
     else {
       userId = req.params.userId;
     }
@@ -100,7 +98,7 @@ export const getProfile = async (req: Request, res: Response) => {
       select: {
         id: true,
         name: true,
-        email: req.userId === userId ? true : undefined, // Hide email from others
+        email: req.userId === userId,
         avatar: true,
         bio: true,
         location: true,

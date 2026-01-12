@@ -8,6 +8,10 @@ export const getFundraiserDonations = async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
+    if (!fundraiserId) {
+      return res.status(400).json({ message: "Fundraiser ID required" });
+    }
+
     const [donations, total] = await Promise.all([
       prisma.donation.findMany({
         where: { fundraiserId },
@@ -16,6 +20,7 @@ export const getFundraiserDonations = async (req: Request, res: Response) => {
             select: {
               id: true,
               name: true,
+              avatar: true,
             },
           },
         },
@@ -47,6 +52,10 @@ export const getTopDonors = async (req: Request, res: Response) => {
     const { fundraiserId } = req.params;
     const limit = parseInt(req.query.limit as string) || 10;
 
+    if (!fundraiserId) {
+      return res.status(400).json({ message: "Fundraiser ID required" });
+    }
+
     const topDonors = await prisma.donation.groupBy({
       by: ["userId"],
       where: { fundraiserId },
@@ -68,12 +77,12 @@ export const getTopDonors = async (req: Request, res: Response) => {
       topDonors.map(async (donor) => {
         const user = await prisma.user.findUnique({
           where: { id: donor.userId },
-          select: { id: true, name: true },
+          select: { id: true, name: true, avatar: true },
         });
         return {
           user,
-          totalAmount: donor._sum.amount || 0,
-          donationCount: donor._count.id,
+          totalAmount: donor._sum?.amount || 0,
+          donationCount: donor._count?.id || 0,
         };
       })
     );
@@ -98,6 +107,7 @@ export const getRecentDonations = async (req: Request, res: Response) => {
             select: {
               id: true,
               name: true,
+              avatar: true,
             },
           },
           fundraiser: {
@@ -134,6 +144,10 @@ export const getDonationStats = async (req: Request, res: Response) => {
   try {
     const { fundraiserId } = req.params;
 
+    if (!fundraiserId) {
+      return res.status(400).json({ message: "Fundraiser ID required" });
+    }
+
     const [stats, topDonation] = await Promise.all([
       prisma.donation.aggregate({
         where: { fundraiserId },
@@ -153,13 +167,13 @@ export const getDonationStats = async (req: Request, res: Response) => {
     ]);
 
     res.json({
-      totalDonations: stats._count.id,
-      totalAmount: stats._sum.amount || 0,
-      averageAmount: Math.round(stats._avg.amount || 0),
+      totalDonations: stats._count?.id || 0,
+      totalAmount: stats._sum?.amount || 0,
+      averageAmount: Math.round(stats._avg?.amount || 0),
       topDonation: topDonation
         ? {
             amount: topDonation.amount,
-            donor: topDonation.user.name,
+            donor: topDonation.user?.name || "Anonymous",
           }
         : null,
     });

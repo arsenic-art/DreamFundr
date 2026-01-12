@@ -8,7 +8,6 @@ import donationRoutes from "./donation.routes.js";
 import profileRoutes from "./profile.routes.js";
 const router = Router();
 
-// mount paths here
 router.use("/auth", authRoutes);
 router.use("/fundraisers", fundraiserRoutes);
 router.use("/comments", commentRoutes);

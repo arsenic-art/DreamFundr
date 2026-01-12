@@ -25,7 +25,7 @@
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+    // "exactOptionalPropertyTypes": true, // Disabled to fix Prisma compatibility issues
 
     // Style Options
     // "noImplicitReturns": true,

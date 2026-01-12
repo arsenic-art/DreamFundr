@@ -13,11 +13,11 @@ import {
 const router = Router();
 
 router.get("/", getAllFundraisers);
+router.get("/me", protect, getMyFundraisers); 
 router.get("/:id", getFundraiserById);
 
 router.post("/", protect, upload.single("coverImage"), createFundraiser);
 router.put("/:id", protect, upload.single("coverImage"), updateFundraiser);
 router.patch("/:id/close", protect, closeFundraiser);
-router.get("/me", protect, getMyFundraisers);
 
 export default router;

@@ -55,7 +55,6 @@ export default function CreateFundraiserPage() {
     setLoading(true);
 
     try {
-      // Use FormData for file upload
       const formData = new FormData();
       formData.append("title", title);
       formData.append("description", description);

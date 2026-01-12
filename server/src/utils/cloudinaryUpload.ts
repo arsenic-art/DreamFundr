@@ -6,13 +6,18 @@ export const uploadImage = (
   publicId?: string
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
+    const uploadOptions: any = {
+      folder,
+      overwrite: true,
+      resource_type: "image",
+    };
+
+    if (publicId) {
+      uploadOptions.public_id = publicId;
+    }
+
     cloudinary.uploader.upload_stream(
-      {
-        folder,
-        public_id: publicId,
-        overwrite: true,
-        resource_type: "image",
-      },
+      uploadOptions,
       (error, result) => {
         if (error) return reject(error);
         resolve(result!.secure_url);

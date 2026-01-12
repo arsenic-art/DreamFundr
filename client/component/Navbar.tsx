@@ -94,8 +94,16 @@ export default function Navbar() {
                   onClick={handleUserClick}
                   title="Go to Profile"
                 >
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500/30 to-purple-500/30 group-hover:scale-110 transition-all duration-300 border border-white/20 flex items-center justify-center shadow-lg">
-                    <User className="w-3.5 h-3.5 text-white drop-shadow-sm" strokeWidth={2} />
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500/30 to-purple-500/30 group-hover:scale-110 transition-all duration-300 border border-white/20 flex items-center justify-center shadow-lg overflow-hidden">
+                    {user?.avatar ? (
+                      <img 
+                        src={user.avatar} 
+                        alt={user.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-3.5 h-3.5 text-white drop-shadow-sm" strokeWidth={2} />
+                    )}
                   </div>
                   <span className="text-xs text-zinc-200 font-semibold max-w-[90px] truncate group-hover:text-white transition-colors">
                     {user?.name}
@@ -171,7 +179,6 @@ export default function Navbar() {
                   </Link>
                   
                   <div className="pt-3 mt-3 border-t border-zinc-800">
-                    {/* CLICKABLE User Avatar/Name → Goes to Profile */}
                     <div 
                       className="flex items-center space-x-2.5 px-3 py-2.5 bg-zinc-900/60 border border-zinc-800/50 rounded-md mb-2 hover:bg-gradient-to-r hover:from-indigo-500/20 hover:to-purple-500/20 hover:border-indigo-400/40 cursor-pointer transition-all duration-300 group"
                       onClick={() => {
@@ -180,8 +187,16 @@ export default function Navbar() {
                       }}
                       title="Go to Profile"
                     >
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500/30 to-purple-500/30 group-hover:scale-110 transition-all duration-300 border border-white/20 flex items-center justify-center shadow-lg">
-                        <User className="w-4 h-4 text-white drop-shadow-sm" strokeWidth={2} />
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500/30 to-purple-500/30 group-hover:scale-110 transition-all duration-300 border border-white/20 flex items-center justify-center shadow-lg overflow-hidden">
+                        {user?.avatar ? (
+                          <img 
+                            src={user.avatar} 
+                            alt={user.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-4 h-4 text-white drop-shadow-sm" strokeWidth={2} />
+                        )}
                       </div>
                       <span className="text-zinc-200 font-semibold text-sm max-w-[200px] truncate group-hover:text-white transition-colors">
                         {user?.name}

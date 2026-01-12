@@ -6,6 +6,10 @@ export const addComment = async (req: Request, res: Response) => {
     const userId = req.userId;
     const { fundraiserId, content } = req.body;
 
+    if (!userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
     if (!fundraiserId || !content) {
       return res.status(400).json({ message: "All fields required" });
     }
@@ -46,6 +50,10 @@ export const getCommentsByFundraiser = async (
   try {
     const { fundraiserId } = req.params;
 
+    if (!fundraiserId) {
+      return res.status(400).json({ message: "Fundraiser ID required" });
+    }
+
     const comments = await prisma.comment.findMany({
       where: { fundraiserId },
       orderBy: { createdAt: "desc" },
@@ -68,6 +76,14 @@ export const deleteComment = async (req: Request, res: Response) => {
   try {
     const userId = req.userId;
     const { id } = req.params;
+
+    if (!userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    if (!id) {
+      return res.status(400).json({ message: "Comment ID required" });
+    }
 
     const comment = await prisma.comment.findUnique({
       where: { id },

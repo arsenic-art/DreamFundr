@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint",
+    "export": "next export",
+    "analyze": "ANALYZE=true npm run build"
   },
   "dependencies": {
     "axios": "^1.13.2",

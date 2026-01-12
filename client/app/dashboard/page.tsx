@@ -32,6 +32,7 @@ export default function DashboardPage() {
   const [fundraisers, setFundraisers] = useState<Fundraiser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -39,15 +40,33 @@ export default function DashboardPage() {
       return;
     }
 
-    fetchMyFundraisers();
-  }, [isLoggedIn, router]);
+    // Prevent multiple calls
+    if (!hasAttemptedFetch) {
+      fetchMyFundraisers();
+    }
+  }, [isLoggedIn, router, hasAttemptedFetch]);
 
   const fetchMyFundraisers = async () => {
+    if (hasAttemptedFetch) return; // Prevent duplicate calls
+    
     try {
+      setHasAttemptedFetch(true);
+      setLoading(true);
+      setError("");
+      
       const res = await api.get("/fundraisers/me");
       setFundraisers(res.data);
     } catch (err: any) {
-      setError("Failed to load your fundraisers");
+      console.error("Dashboard fetch error:", err);
+      
+      if (err.response?.status === 429) {
+        setError("Too many requests. Please wait a moment and refresh the page.");
+      } else if (err.response?.status === 401) {
+        setError("Session expired. Please log in again.");
+        router.push("/login");
+      } else {
+        setError("Failed to load your fundraisers. Please try refreshing the page.");
+      }
     } finally {
       setLoading(false);
     }
@@ -86,7 +105,25 @@ export default function DashboardPage() {
       <div className="min-h-screen flex items-center justify-center px-6 bg-[#030303]">
         <div className="bg-zinc-900/50 border border-red-500/20 p-8 rounded-xl text-center max-w-md">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" strokeWidth={1.5} />
-          <p className="text-red-400 text-sm">{error}</p>
+          <p className="text-red-400 text-sm mb-6">{error}</p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => {
+                setError("");
+                setHasAttemptedFetch(false);
+                setLoading(true);
+              }}
+              className="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors text-sm font-medium"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => router.push("/")}
+              className="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg transition-colors text-sm font-medium"
+            >
+              Go Home
+            </button>
+          </div>
         </div>
       </div>
     );

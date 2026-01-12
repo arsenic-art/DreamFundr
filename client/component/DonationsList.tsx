@@ -11,6 +11,7 @@ interface Donation {
   user: {
     id: string;
     name: string;
+    avatar?: string;
   };
 }
 
@@ -31,13 +32,13 @@ export default function DonationsList({ fundraiserId }: DonationsListProps) {
       const res = await api.get(
         `/donations/fundraiser/${fundraiserId}?page=${pageNum}&limit=10`
       );
-      
+
       if (pageNum === 1) {
         setDonations(res.data.donations);
       } else {
         setDonations((prev) => [...prev, ...res.data.donations]);
       }
-      
+
       setHasMore(res.data.pagination.hasMore);
       setTotalDonations(res.data.pagination.total);
     } catch (err) {
@@ -88,7 +89,6 @@ export default function DonationsList({ fundraiserId }: DonationsListProps) {
     <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-white flex items-center space-x-2">
-          <Heart className="w-5 h-5 text-indigo-400" fill="currentColor" />
           <span>Recent Donations ({totalDonations})</span>
         </h2>
       </div>
@@ -108,8 +108,16 @@ export default function DonationsList({ fundraiserId }: DonationsListProps) {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center flex-shrink-0">
-                      <User className="w-5 h-5 text-zinc-400" strokeWidth={2} />
+                    <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {donation.user.avatar ? (
+                        <img
+                          src={donation.user.avatar}
+                          alt={donation.user.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-5 h-5 text-zinc-400" strokeWidth={2} />
+                      )}
                     </div>
                     <div>
                       <p className="font-semibold text-white text-sm">

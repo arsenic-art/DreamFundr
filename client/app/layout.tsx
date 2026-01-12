@@ -1,4 +1,5 @@
 import Navbar from '../component/Navbar';
+import ErrorBoundary from '../component/ErrorBoundary';
 import './globals.css';
 
 export default function RootLayout({
@@ -9,8 +10,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-slate-900 text-white">
-        <Navbar />
-        {children}
+        <ErrorBoundary>
+          <Navbar />
+          {children}
+        </ErrorBoundary>
       </body>
     </html>
   );

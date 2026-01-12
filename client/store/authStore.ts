@@ -20,7 +20,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   setUser: (user: User, token: string) => void;
-  updateUser: (user: User, token?: string) => void; // ✅ Added
+  updateUser: (user: User, token?: string) => void; 
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -56,10 +56,10 @@ export const useAuthStore = create<AuthState>()(
         if (token) localStorage.setItem('token', token);
       },
 
-      // ✅ FIXED: Proper update method
-      updateUser: (user, token = get().token) => {
-        set({ user, token, isLoggedIn: true });
-        if (token) localStorage.setItem('token', token);
+      updateUser: (user, token?: string) => {
+        const currentToken = token || get().token;
+        set({ user, token: currentToken, isLoggedIn: true });
+        if (currentToken) localStorage.setItem('token', currentToken);
       },
     }),
     {

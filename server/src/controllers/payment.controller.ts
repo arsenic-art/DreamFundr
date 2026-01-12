@@ -59,6 +59,9 @@ export const verifyPayment = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid order metadata" });
     }
 
+    const fundraiserIdStr = String(fundraiserId);
+    const userIdStr = String(userId);
+
     const body = `${razorpay_order_id}|${razorpay_payment_id}`;
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
@@ -85,13 +88,13 @@ export const verifyPayment = async (req: Request, res: Response) => {
           razorpayOrderId: razorpay_order_id,
           razorpayPaymentId: razorpay_payment_id,
           razorpaySignature: razorpay_signature,
-          fundraiser: { connect: { id: fundraiserId } },
-          user: { connect: { id: userId } },
+          fundraiser: { connect: { id: fundraiserIdStr } },
+          user: { connect: { id: userIdStr } },
         },
       });
 
       await tx.fundraiser.update({
-        where: { id: fundraiserId },
+        where: { id: fundraiserIdStr },
         data: { raisedAmount: { increment: amount } },
       });
     });

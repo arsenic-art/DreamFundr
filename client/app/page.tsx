@@ -32,10 +32,10 @@ type Feature = {
 };
 
 const MOCK_DREAMS: Dream[] = [
-  { text: "Open a coffee shop that feeds students for free.", author: "Maya, 24", funded: 78 },
-  { text: "Buy art supplies to teach neighborhood kids.", author: "Carlos, 31", funded: 92 },
-  { text: "A powerful laptop for my coding bootcamp.", author: "Priya, 19", funded: 45 },
-  { text: "Grandma's cataract surgery.", author: "Ahmed, 27", funded: 67 },
+  { text: "Open a coffee shop that feeds students for free.", author: "Akshara, 21", funded: 54 },
+  { text: "Buy art supplies to teach neighborhood kids.", author: "Navya, 23", funded: 73 },
+  { text: "A powerful laptop for my coding bootcamp.", author: "Shreyansh, 19", funded: 59 },
+  { text: "Grandma's cataract surgery.", author: "Rudransh, 26", funded: 67 },
 ];
 
 const HOW_IT_WORKS_FEATURES: Feature[] = [
@@ -192,7 +192,7 @@ export default function DreamFundrLanding() {
         </div>
       </section>
 
-      {/* LIVE DREAM SHOWCASE */}
+      {/* DREAM SHOWCASE */}
       <section className="relative z-10 px-6 pb-24">
         <div className="max-w-3xl mx-auto">
           <AnimatePresence mode="wait">
