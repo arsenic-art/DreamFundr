@@ -2,6 +2,13 @@ import Navbar from '../component/Navbar';
 import ErrorBoundary from '../component/ErrorBoundary';
 import './globals.css';
 
+export const metadata = {
+  title: "Dream-Fundr",
+  icons: {
+    icon: "/favicon.ico",
+  },
+};
+
 export default function RootLayout({
   children,
 }: {
